@@ -1,64 +1,38 @@
-"use client";
-import Image from "next/image";
-import { ThemeToggler } from "@/components/home/ToggleTheme";
-import { BigMovie, Header, Moviecard } from "@/components/home/";
-// import Movie from "@/components/home/Api";
-type MovieType = {
-  adult: boolean;
-  backdrop_path: string;
-  genre_ids: number[];
-  id: number;
-  original_language: string;
-  overview: string;
-  poster_path: string;
-  release_date: string;
-  title: string;
-  vote_average: number;
-};
+import { MovieCarousel } from "@/components/main/MovieCarousel";
+import { MoviesContainer } from "@/components/home/mvoies-container";
+import { movieResponseType } from "@/components/main/Movietype";
+import { getMoviesList } from "@/utilis/get-data";
+import SeeMore from "@/components/main/SeeMore";
 
-type movieResponseType = {
-  page: number;
-  totalPages: number;
-  results: MovieType[];
-};
-
-const getMoviesList = async (listName: string) => {
-  console.log(process.env.NEXT_PUBLIC_KEY_TMDB_ACCESS_KEY);
-  const res = await fetch(
-    `https://api.themoviedb.org/3/movie/${listName}?language=en-US&page=1`,
-    {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_KEY_TMDB_ACCESS_KEY}`,
-      },
-    }
+export default async function Home() {
+  const upcomingMovies: movieResponseType = await getMoviesList("upcoming");
+  const popularMovies: movieResponseType = await getMoviesList("popular");
+  const topRatedMovies: movieResponseType = await getMoviesList("top_rated");
+  const nowPlayingMovies: movieResponseType = await getMoviesList(
+    "now_playing"
   );
-  const data = await res.json();
-  return data;
-};
 
-const upcomingMovies: movieResponseType = await getMoviesList("now_playing");
-console.log(upcomingMovies);
-
-export default function Home() {
   return (
-    <div className=" w-[1440px] m-auto">
+    <div className="w-full flex flex-col items-center">
       <div>
-        <Header></Header>
-        <BigMovie></BigMovie>
-        <ThemeToggler />
-      </div>
-      <div>
-        {upcomingMovies.results.map((movie) => (
-          <div>
-            <Moviecard
-              title={movie.title}
-              Score={movie.vote_average}
-              Image={movie.poster_path}
-            ></Moviecard>
-          </div>
-        ))}
+        <MovieCarousel movies={nowPlayingMovies.results} />
+
+        <MoviesContainer
+          movies={upcomingMovies.results}
+          title="Upcoming"
+          link="upcoming"
+        />
+
+        <MoviesContainer
+          movies={popularMovies.results}
+          title="Popular"
+          link="popular"
+        />
+        <MoviesContainer
+          movies={topRatedMovies.results}
+          title="Top Rated"
+          link="top_rated"
+        />
       </div>
     </div>
   );
